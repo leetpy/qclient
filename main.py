@@ -20,7 +20,7 @@ class BaseAction():
         return params
 
 
-class RunInstanceAction(BaseAction):
+class RunInstancesAction(BaseAction):
 
     name = "RunInstances"
     base_optional = ["instance_class", "count", "instance_name", "vxnets", 
@@ -134,15 +134,14 @@ class RunInstanceAction(BaseAction):
                 help='''The memory size in MB, e.g. "1024, 2048, 4096"''')
 
 
-class DescribeInstanceAction(BaseAction):
+class DescribeInstancesAction(BaseAction):
     name = "DescribeInstances"
 
-    base_optional = ["instances", "status", "image_id",
-                     "instance_type", "search_word", "verbose"]
+    base_optional = ["status", "search_word", "verbose"]
 
     @classmethod
     def add_subparser(cls, subparsers):
-        parser = subparsers.add_parser('describe-instance', help='create instances')
+        parser = subparsers.add_parser('describe-instances', help='describe instances')
         parser.add_argument('-i', '--instances', dest='instances',
                             type=str, default='',
                             help='the comma separated IDs of instances you want to describe.')
@@ -168,29 +167,63 @@ class DescribeInstanceAction(BaseAction):
                 action='store', type=int, default=0,
                 help='the number to specify the verbose level, larger the number, the more detailed information will be returned.')
 
+    @classmethod
+    def get_params(cls, args):
+        params = {}
 
-class TerminateInstanceAction(BaseAction):
+        for op in cls.base_optional:
+            if hasattr(args, op) and getattr(args, op):
+                params[op] = getattr(args, op)
+
+        # add instances
+        if args.instances:
+            instances = args.instances.split(',')
+            for i in range(len(instances)):
+                key = "instances.%d" % (i+1)
+                params[key] = instances[i]
+
+        # add image_id 
+        if args.image_id:
+            image_id = args.image_id.split(',')
+            for i in range(len(image_id)):
+                key = "image_id.%d" % (i+1)
+                params[key] = image_id[i]
+
+        # add instance_type
+        if args.instance_type:
+            instance_type = args.instance_type.split(',')
+            for i in range(len(instance_type)):
+                key = "instance_type.%d" % (i+1)
+                params[key] = instance_type[i]
+        return params
+
+
+class TerminateInstancesAction(BaseAction):
     
     name = "TerminateInstances"
-    optional = []
+    base_optional = []
 
     @classmethod
     def add_subparser(cls, subparsers):
-        ri_parser = subparsers.add_parser('terminare-instance', help='create instances')
-        ri_parser.add_argument('-m', '--image_id', dest='image_id',
-                               type=str, default='', required=True,
-                               help='image ID')
-        ri_parser.add_argument('-t', '--instance_type', dest='instance_type',
-                               type=str, default=None, required=True,
-                               help='instance type: small_b, small_c, medium_a, medium_b, medium_c, \
-                               large_a, large_b, large_c')
+        parser = subparsers.add_parser('terminate-instances', help='terminate instances')
+        parser.add_argument('-i', '--instances', dest='instances',
+                action='store', type=str, default='', required=True,
+                help='the comma separated IDs of instances you want to terminate.')
 
+    @classmethod
+    def get_params(cls, args):
+        params = {}
+        instances = args.instances.split(',')
+        for i in range(len(instances)):
+            key = "instances.%d" % (i+1)
+            params[key] = instances[i]
+        return params
 
 class QShell(object):
     action_map = {
-        "run-instances": RunInstanceAction,
-        "describe-instance": DescribeInstanceAction,
-        "terminare-instance": TerminateInstanceAction,
+        "run-instances": RunInstancesAction,
+        "describe-instances": DescribeInstancesAction,
+        "terminate-instances": TerminateInstancesAction,
     }
     
     url = "https://api.qingcloud.com/iaas/"
@@ -228,14 +261,12 @@ class QShell(object):
             sys.exit(1)
        
     def main(self, argv):
-        parser = self.get_base_parser()
-        parser.parse_known_args(argv)
-
         subcommand_parser = self.get_subcommand_parser()
         args = subcommand_parser.parse_args(argv)
         action = self.action_map[argv[0]]
         params = action.get_params(args)
         params['action'] = action.name
+        print params
         conf = self.load_config()
         send_http(self.url, params, conf)
 
