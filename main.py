@@ -13,9 +13,20 @@ class RunInstanceAction(BaseAction):
     
     @classmethod
     def get_params(cls, args):
-        return {
+        params = {
             "image_id": args.image_id,
         }
+        if hasattr(args, "instance_type"):
+            params["instance_type"] = args.instance_type
+        else:
+            if hasattr(args, "cpu") and hasattr(args, memory):
+                params["cpu"] = args.cpu
+                params["memory"] = args.memory
+            else:
+                print("error, you should specify instance_type or specify both CPU and memory")
+                sys.exit(1)
+        return params
+    
 
 class QShell(object):
     action_map = {
