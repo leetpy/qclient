@@ -18,7 +18,14 @@ class RunInstanceAction(BaseAction):
         }
 
 class QShell(object):
-
+    action_map = {
+        "run-instances": RunInstanceAction,
+        "describe-instance": DescribeInstanceAction,
+        "terminare-instance": TerminateInstanceAction,
+    }
+    
+    url = "https://api.qincloud.com/iaas/?"
+    
     def get_base_parser(self):
         parser = argparse.ArgumentParser(prog='qingcloud client')
         return parser
@@ -43,14 +50,10 @@ class QShell(object):
             cf_file = user_config
         else:
             cfg_file = os.path.join(work_dir, 'config.yaml')
-
-    try:
-
-        conf = utils.parse_config(cfg_file)
-
-    except Exception, e:
-
-        print(e)
+        try:
+            conf = utils.parse_config(cfg_file)
+        except Exception, e:
+            print(e)
        
     def main(self, argv):
         parser = self.get_base_parser()
@@ -58,6 +61,11 @@ class QShell(object):
 
         subcommand_parser = self.get_subcommand_parser()
         args = subcommand_parser.parse_args(argv)
+        action = self.action_map[argv[0]]
+        params = self.get_params(args)
+        conf = self.load_config()
+        
+        send_http(self.url, params)
 
 
 def main():
