@@ -31,6 +31,7 @@ def get_signature(string_to_sign, conf):
     signature = urllib.quote_plus(sign)
     return signature
 
+
 def update_params(params, conf):
     params['zone'] = conf['zone']
     params['access_key_id'] = conf['qy_access_key_id']

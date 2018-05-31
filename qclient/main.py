@@ -3,8 +3,8 @@
 import argparse
 import os
 import sys
-import utils
-from http_util import send_http
+import qclient.utils
+from qclient.http_util import send_http
 
 
 class BaseAction():

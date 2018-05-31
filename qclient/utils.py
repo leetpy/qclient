@@ -33,6 +33,3 @@ def parse_config(cfg_path):
     # make suer all necessary keys have been set
     check_key(conf)
     return conf
-
-
-
