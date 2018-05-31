@@ -5,6 +5,17 @@ import os
 import sys
 import utils
 
+class BaseAction():
+    pass
+
+
+class RunInstanceAction(BaseAction):
+    
+    @classmethod
+    def get_params(cls, args):
+        return {
+            "image_id": args.image_id,
+        }
 
 class QShell(object):
 
@@ -24,7 +35,23 @@ class QShell(object):
                                help='instance type: small_b, small_c, medium_a, medium_b, medium_c, \
                                large_a, large_b, large_c')
         return parser
+    
+    def load_config(self):
+        user_config = '~/.qingcloud/config.yaml'
+        work_dir = os.path.dirname(os.path.realpath(__file__))
+        if os.path.isfile(user_config):
+            cf_file = user_config
+        else:
+            cfg_file = os.path.join(work_dir, 'config.yaml')
 
+    try:
+
+        conf = utils.parse_config(cfg_file)
+
+    except Exception, e:
+
+        print(e)
+       
     def main(self, argv):
         parser = self.get_base_parser()
         parser.parse_known_args(argv)
@@ -46,16 +73,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-
-    user_config = '~/.qingcloud/config.yaml'
-    work_dir = os.path.dirname(os.path.realpath(__file__))
-    if os.path.isfile(user_config):
-        cf_file = user_config
-    else:
-        cfg_file = os.path.join(work_dir, 'config.yaml')
-
-    try:
-        conf = utils.parse_config(cfg_file)
-    except Exception, e:
-        print(e)
-
