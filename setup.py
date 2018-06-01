@@ -11,8 +11,6 @@ qy_secret_access_key: 'QINGCLOUDSECRETACCESSKEYEXAMPLE'
 zone: 'ZONEID'
 '''
 
-def is_windows():
-    return platform.system().lower() == 'windows'
 
 def prepare_config_file():
     config_file = os.path.expanduser('~/.qingcloud/config.yaml')
