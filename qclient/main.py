@@ -254,7 +254,7 @@ class QShell(object):
             cfg_file = os.path.join(work_dir, 'config.yaml')
 
         try:
-            conf = utils.parse_config(cfg_file)
+            conf = qclient.utils.parse_config(cfg_file)
             return conf
         except Exception, e:
             print(e)
