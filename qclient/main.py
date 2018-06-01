@@ -266,7 +266,6 @@ class QShell(object):
         action = self.action_map[argv[0]]
         params = action.get_params(args)
         params['action'] = action.name
-        print params
         conf = self.load_config()
         send_http(self.url, params, conf)
 
